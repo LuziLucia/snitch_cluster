@@ -152,6 +152,7 @@ TARGET_C_HDRS = $(addprefix $(TARGET_C_HDRS_DIR)/,$(CLUSTER_GEN_HEADERS) $(REGGE
 .PHONY: sw clean-headers clean-sw
 
 sw: $(TARGET_C_HDRS)
+	$(MAKE) -C sw/apps/softmax/
 	$(MAKE) -C $(SW_DIR)
 
 clean-headers:
