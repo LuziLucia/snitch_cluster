@@ -15,6 +15,7 @@ endif
 
 SUBDIRS = apps tests runtime/banshee runtime/rtl
 
+
 .PHONY: all $(SUBDIRS)
 
 all: $(SUBDIRS)

@@ -8,6 +8,7 @@ SUBDIRS  = lto
 SUBDIRS += nop
 SUBDIRS += blas/axpy
 SUBDIRS += blas/gemm
+SUBDIRS += softmax
 
 .PHONY: all clean $(SUBDIRS)
 

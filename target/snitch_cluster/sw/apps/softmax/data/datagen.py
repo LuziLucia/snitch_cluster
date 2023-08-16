@@ -8,9 +8,12 @@
 import sys
 import argparse
 import numpy as np
+import torch
+import torch.nn.functional as F
+
 
 MIN = 0
-MAX = +100
+MAX = +5
 
 
 def format_vector_definition(id, vector):
@@ -49,12 +52,16 @@ def main():
     result = np.zeros(length)
     
     # calculate softmax for golden model
-    sum = 0.0
-    for i in range(len(x)):
-        sum += np.exp(x[i])
+    # sum = 0.0
+    # for i in range(len(x)):
+    #     #y[i] = np.exp(x[i] - max(x))
+    #     sum += np.exp(x[i] - max(x))
 
-    for i in range(len(x)):
-        result[i] = np.exp(x[i]) / sum
+    x_tensor = torch.tensor(x)
+    result = F.softmax(x_tensor, dim=0)
+
+    # for i in range(len(x)):
+    #     result[i] = np.exp(x[i] - max(x)) / sum
 
     # Format header file
     l_str = format_scalar_definition('l', length, 'uint32_t')

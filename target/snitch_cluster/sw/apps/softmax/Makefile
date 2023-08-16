@@ -4,7 +4,7 @@ MK_DIR   := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 DATA_DIR := $(realpath $(MK_DIR)/data)
 SRC_DIR  := $(realpath $(MK_DIR)/src)
 
-LENGTH ?= 16
+LENGTH ?= 384
 
 APP     ?= softmax
 SRCS    ?= $(realpath $(SRC_DIR)/softmax.c)

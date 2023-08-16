@@ -35,6 +35,16 @@ inline double my_exp(double x)
     return e; 
 } 
 
+static inline double naive_exponential(double x) {
+    double result = 1.0f;
+    double term = 1.0f;
+    for (int i = 1; i < 10; i++) {
+        term *= x / i;
+        result += term;
+    }
+    return result;
+}
+
 double my_log(double x, double n)
 {
     double alpha = (x-1)/(x+1), ans = alpha;
@@ -49,21 +59,24 @@ double my_log(double x, double n)
     return 2.0*ans;
 }
 
-// static inline?
-void softmax(uint32_t length, double *x, double *y, double *z) {
-    //int core_idx = snrt_cluster_core_idx();
-    //int offset = core_idx * l;
-    double sum = 0.0;
 
-    for(int i = 0; i < length; i++)
+void softmax(uint32_t length, double *x, double *y, double *z) {
+    double sum = 0.0;
+    double max_x = 0.0;
+
+    // get max value of x
+    for (int i = 0; i < length; ++i)
     {
-        y[i] = expf(x[i]);
-        sum += y[i];
+        if (x[i] > max_x) max_x = x[i];
     }
 
-    if(sum == 0.0) 
+    for (int i = 0; i < length; i++)
     {
-        sum = 0.001;
+        //y[i] = expf(x[i] - max_x);
+        y[i] = my_exp(x[i] - max_x);
+        //y[i] = naive_exponential(x[i]);
+
+        sum += y[i];
     }
 
     for(int i = 0; i < length; i++)
@@ -73,25 +86,34 @@ void softmax(uint32_t length, double *x, double *y, double *z) {
 }
 
 int main() {
-    uint32_t errors = 0;
+    double cycles;
+    double rel_err = 0.0;
 
     // Read the mcycle CSR (this is our way to mark/delimit a specific code region for benchmarking)
     uint32_t start_cycle = mcycle();
 
-    // DM core does not participate in the computation
-    //if(snrt_is_compute_core())
     softmax(l, x, y, z);
     snrt_cluster_hw_barrier();
 
     // Read the mcycle CSR
     uint32_t end_cycle = mcycle();
 
-    // Check if computation is correct
-    for (int i = 0; i < l; i++) {
-        //if (z[i] != result[i]) errors++;
-    
-        if (my_fabs(z[i] - result[i]) > 0.001) errors++;
-    }
+    // get #cycles and save in reg
+    cycles = end_cycle - start_cycle;
+    asm volatile (
+        "fmv.d    ft9, %[cycles]\n"
+        : [cycles] "+f"(cycles)
+    );
 
-    return errors;
+    // get the relative error
+    for (int i = 0; i < l; i++) {
+        rel_err += my_fabs(z[i] - result[i]) / (result[i]);
+    }    
+    rel_err /= l;
+    asm volatile (
+        "fmv.d    ft10, %[rel_err]\n"
+        : [rel_err] "+f"(rel_err)
+    );
+
+    return 0;
 }
