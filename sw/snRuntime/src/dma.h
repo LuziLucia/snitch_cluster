@@ -314,8 +314,7 @@ inline void snrt_dma_wait_channel(snrt_dma_txid_t tid, uint32_t channel) {
     asm volatile(
         "1: \n"
         ".word %0\n"
-        "sub t0, t0, %1 \n"
-        "blez t0, 1b \n" ::"i"(
+        "bltu t0, %1, 1b \n" ::"i"(
             R_TYPE_ENCODE(DMSTAT_FUNCT7, 6, 0, XDMA_FUNCT3, 5, OP_CUSTOM1)),
         "r"(tid), "r"(cfg)
         : "t0");
