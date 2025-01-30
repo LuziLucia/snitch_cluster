@@ -1018,7 +1018,8 @@ module snitch_cluster
         .CaqTagWidth (CaqTagWidth),
         .DebugSupport (DebugSupport),
         .TCDMAliasEnable (AliasRegionEnable),
-        .TCDMAliasStart (TCDMAliasStart)
+        .TCDMAliasStart (TCDMAliasStart),
+        .addr_rule_t (addr_rule_t)
       ) i_snitch_cc (
         .clk_i,
         .clk_d2_i (clk_d2),
@@ -1042,7 +1043,8 @@ module snitch_cluster
         .core_events_o (core_events[i]),
         .tcdm_addr_base_i (tcdm_start_address),
         .barrier_o (barrier_in[i]),
-        .barrier_i (barrier_out)
+        .barrier_i (barrier_out),
+        .dma_addr_rule (dma_addr_rule)
       );
       for (genvar j = 0; j < TcdmPorts; j++) begin : gen_tcdm_user
         always_comb begin

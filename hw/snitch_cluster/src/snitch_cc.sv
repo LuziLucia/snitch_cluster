@@ -117,7 +117,8 @@ module snitch_cc #(
   /// Derived parameter *Do not override*
   parameter int unsigned TCDMPorts = (NumSsrs > 1 ? NumSsrs : 1),
   parameter type addr_t = logic [AddrWidth-1:0],
-  parameter type data_t = logic [DataWidth-1:0]
+  parameter type data_t = logic [DataWidth-1:0],
+  parameter type addr_rule_t = axi_pkg::xbar_rule_64_t
 ) (
   input  logic                              clk_i,
   input  logic                              clk_d2_i,
@@ -147,7 +148,9 @@ module snitch_cc #(
   input  addr_t                             tcdm_addr_base_i,
   // Cluster HW barrier
   output logic                              barrier_o,
-  input  logic                              barrier_i
+  input  logic                              barrier_i,
+  // address decode map
+  input  addr_rule_t [4:0]  addr_map_i      dma_addr_rule
 );
 
   // FMA architecture is "merged" -> mulexp and macexp instructions are supported
@@ -404,7 +407,8 @@ module snitch_cc #(
       .obi_res_t (obi_rsp_t),
       .acc_req_t (acc_req_t),
       .acc_res_t (acc_resp_t),
-      .dma_events_t (dma_events_t)
+      .dma_events_t (dma_events_t),
+      .addr_rule_t (addr_rule_t)
     ) i_idma_inst64_top (
       .clk_i,
       .rst_ni,
@@ -423,7 +427,8 @@ module snitch_cc #(
       .acc_res_valid_o ( dma_pvalid       ),
       .acc_res_ready_i ( dma_pready       ),
       .hart_id_i       ( hart_id_i        ),
-      .events_o        ( axi_dma_events_o )
+      .events_o        ( axi_dma_events_o ),
+      .dma_addr_rule   ( dma_addr_rule     )
     );
 
   // no DMA instanciated
