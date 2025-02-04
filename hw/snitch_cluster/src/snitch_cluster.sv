@@ -18,6 +18,8 @@
 
 `include "snitch_vm/typedef.svh"
 
+`include "obi/typedef.svh"
+
 /// Snitch many-core cluster with improved TCDM interconnect.
 /// Snitch Cluster Top-Level.
 module snitch_cluster
@@ -381,10 +383,10 @@ module snitch_cluster
 
   // Memory Init typedefs
   typedef struct packed {
-      logic [AddrWidth-1:0]  cfg;
-      logic [DataWidth-1:0]  term;
-      logic [StrbWidth-1:0]  strb;
-      logic [AxiIdWidth-1:0] id;
+      logic [PhysicalAddrWidth-1:0] cfg;
+      logic [WideDataWidth-1:0]     term;
+      logic [WideDataWidth/8-1:0]   strb;
+      logic [WideIdWidthOut-1:0]    id;
   } init_req_chan_t;
 
   typedef struct packed {
@@ -394,7 +396,7 @@ module snitch_cluster
   } init_req_t;
 
   typedef struct packed {
-      logic [DataWidth-1:0] init;
+      logic [WideDataWidth-1:0] init;
   } init_rsp_chan_t;
 
   typedef struct packed {
@@ -407,8 +409,8 @@ module snitch_cluster
   `OBI_TYPEDEF_MINIMAL_A_OPTIONAL(a_optional_t)
   `OBI_TYPEDEF_MINIMAL_R_OPTIONAL(r_optional_t)
 
-  `OBI_TYPEDEF_TYPE_A_CHAN_T(obi_a_chan_t, addr_t, data_t, strb_t, id_t, a_optional_t)
-  `OBI_TYPEDEF_TYPE_R_CHAN_T(obi_r_chan_t, data_t, id_t, r_optional_t)
+  `OBI_TYPEDEF_TYPE_A_CHAN_T(obi_a_chan_t, addr_t, data_t, strb_t, id_dma_mst_t, a_optional_t)
+  `OBI_TYPEDEF_TYPE_R_CHAN_T(obi_r_chan_t, data_t, id_dma_slv_t, r_optional_t)
 
   `OBI_TYPEDEF_REQ_T(obi_req_t, obi_a_chan_t)
   `OBI_TYPEDEF_RSP_T(obi_rsp_t, obi_r_chan_t)
@@ -561,6 +563,9 @@ module snitch_cluster
   tcdm_events_t                                    tcdm_events;
   dma_events_t [DMANumChannels-1:0]                dma_events;
   snitch_icache_pkg::icache_events_t [NrCores-1:0] icache_events;
+
+  tcdm_req_t [DMANumChannels-1:0] tcdm_dma_req;
+  tcdm_rsp_t [DMANumChannels-1:0] tcdm_dma_rsp;
 
   // 4. Memory Subsystem (Core side).
   reqrsp_req_t [NrCores-1:0] core_req;
@@ -979,8 +984,12 @@ module snitch_cluster
         .axi_aw_chan_t (axi_mst_dma_aw_chan_t),
         .axi_req_t (axi_mst_dma_req_t),
         .axi_rsp_t (axi_mst_dma_resp_t),
+        .init_req_chan_t (init_req_chan_t),
+        .init_rsp_chan_t (init_rsp_chan_t),
         .init_req_t (init_req_t),
         .init_rsp_t (init_rsp_t),
+        .obi_a_chan_t (obi_a_chan_t),
+        .obi_r_chan_t (obi_r_chan_t),
         .obi_req_t (obi_req_t),
         .obi_rsp_t (obi_rsp_t),
         .hive_req_t (hive_req_t),
@@ -1031,7 +1040,7 @@ module snitch_cluster
         .DebugSupport (DebugSupport),
         .TCDMAliasEnable (AliasRegionEnable),
         .TCDMAliasStart (TCDMAliasStart),
-        .addr_rule_t (addr_rule_t)
+        .addr_rule_t (xbar_rule_t)
       ) i_snitch_cc (
         .clk_i,
         .clk_d2_i (clk_d2),
@@ -1056,7 +1065,7 @@ module snitch_cluster
         .tcdm_addr_base_i (tcdm_start_address),
         .barrier_o (barrier_in[i]),
         .barrier_i (barrier_out),
-        .dma_addr_rule (dma_addr_rule)
+        .dma_addr_rule_i (dma_addr_rule)
       );
       for (genvar j = 0; j < TcdmPorts; j++) begin : gen_tcdm_user
         always_comb begin

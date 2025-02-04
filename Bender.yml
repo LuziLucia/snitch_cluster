@@ -27,7 +27,8 @@ dependencies:
   tech_cells_generic: { git: https://github.com/pulp-platform/tech_cells_generic, version:  0.2.11  }
   riscv-dbg:          { git: https://github.com/pulp-platform/riscv-dbg,          version:  0.8.0   }
   cluster_icache:     { git: https://github.com/pulp-platform/cluster_icache.git, version:  0.1.0   }
-  idma:               { git: https://github.com/pulp-platform/iDMA,               rev: 28a39a012e61bcdf95596802a38a58bc22a21150 }
+  obi:                { git: "https://github.com/pulp-platform/obi.git",          version:  0.1.2   }
+  idma:               { git: https://github.com/pulp-platform/iDMA,               rev: "luzil/interl" }
 
 export_include_dirs:
   - hw/reqrsp_interface/include
@@ -78,6 +79,7 @@ sources:
       - hw/tcdm_interface/src/tcdm_interface.sv
       # Level 1
       - hw/tcdm_interface/src/axi_to_tcdm.sv
+      - hw/tcdm_interface/src/obi_to_tcdm.sv
       - hw/tcdm_interface/src/reqrsp_to_tcdm.sv
       - hw/tcdm_interface/src/tcdm_mux.sv
   - target: simulation

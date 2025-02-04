@@ -40,8 +40,12 @@ module snitch_cc #(
   parameter type         axi_aw_chan_t      = logic,
   parameter type         axi_req_t          = logic,
   parameter type         axi_rsp_t          = logic,
+  parameter type         init_req_chan_t    = logic,
+  parameter type         init_rsp_chan_t    = logic,
   parameter type         init_req_t         = logic,
   parameter type         init_rsp_t         = logic,
+  parameter type         obi_a_chan_t       = logic,
+  parameter type         obi_r_chan_t       = logic,
   parameter type         obi_req_t          = logic,
   parameter type         obi_rsp_t          = logic,  
   parameter type         hive_req_t         = logic,
@@ -150,7 +154,7 @@ module snitch_cc #(
   output logic                              barrier_o,
   input  logic                              barrier_i,
   // address decode map
-  input  addr_rule_t [4:0]  addr_map_i      dma_addr_rule
+  input  addr_rule_t [4:0]                  dma_addr_rule_i
 );
 
   // FMA architecture is "merged" -> mulexp and macexp instructions are supported
@@ -401,8 +405,12 @@ module snitch_cc #(
       .axi_aw_chan_t (axi_aw_chan_t),
       .axi_req_t (axi_req_t),
       .axi_res_t (axi_rsp_t),
+      .init_req_chan_t (init_req_chan_t),
+      .init_rsp_chan_t (init_rsp_chan_t),
       .init_req_t (init_req_t),
       .init_rsp_t (init_rsp_t),
+      .obi_a_chan_t (obi_a_chan_t),
+      .obi_r_chan_t (obi_r_chan_t),
       .obi_req_t (obi_req_t),
       .obi_res_t (obi_rsp_t),
       .acc_req_t (acc_req_t),
@@ -428,7 +436,7 @@ module snitch_cc #(
       .acc_res_ready_i ( dma_pready       ),
       .hart_id_i       ( hart_id_i        ),
       .events_o        ( axi_dma_events_o ),
-      .dma_addr_rule   ( dma_addr_rule     )
+      .addr_map_i      ( dma_addr_rule_i  )
     );
 
   // no DMA instanciated
