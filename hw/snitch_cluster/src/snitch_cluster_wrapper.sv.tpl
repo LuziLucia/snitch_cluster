@@ -62,7 +62,7 @@ package ${cfg['pkg_name']};
   localparam int unsigned NrNarrowMasters = 3;
   localparam int unsigned NarrowIdWidthOut = $clog2(NrNarrowMasters) + NarrowIdWidthIn;
 
-  localparam int unsigned NrWideMasters = 1 + ${cfg['dma_nr_channels']} + ${cfg['nr_hives']};
+  localparam int unsigned NrWideMasters = ${cfg['dma_nr_channels']} + ${cfg['nr_hives']};
   localparam int unsigned WideIdWidthIn = ${cfg['dma_id_width_in']};
   localparam int unsigned WideIdWidthOut = $clog2(NrWideMasters) + WideIdWidthIn;
 

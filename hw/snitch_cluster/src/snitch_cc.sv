@@ -154,7 +154,7 @@ module snitch_cc #(
   output logic                              barrier_o,
   input  logic                              barrier_i,
   // address decode map
-  input  addr_rule_t [4:0]                  dma_addr_rule_i
+  input  addr_rule_t [3:0]                  dma_addr_rule_i
 );
 
   // FMA architecture is "merged" -> mulexp and macexp instructions are supported
@@ -423,8 +423,6 @@ module snitch_cc #(
       .testmode_i      ( 1'b0             ),
       .axi_req_o       ( axi_dma_req_o    ),
       .axi_res_i       ( axi_dma_res_i    ),
-      .init_req_o      ( init_dma_req_o   ),
-      .init_res_i      ( init_dma_res_i   ),
       .obi_req_o       ( obi_dma_req_o    ),
       .obi_res_i       ( obi_dma_res_i    ),
       .busy_o          ( axi_dma_busy_o   ),
