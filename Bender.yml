@@ -28,7 +28,7 @@ dependencies:
   riscv-dbg:          { git: https://github.com/pulp-platform/riscv-dbg,          version:  0.8.0   }
   cluster_icache:     { git: https://github.com/pulp-platform/cluster_icache.git, version:  0.1.0   }
   obi:                { git: "https://github.com/pulp-platform/obi.git",          version:  0.1.2   }
-  idma:               { git: https://github.com/pulp-platform/iDMA,               rev: "luzil/interl" }
+  idma:               { path: "/home/msc24h31/iDMA" }
 
 export_include_dirs:
   - hw/reqrsp_interface/include
