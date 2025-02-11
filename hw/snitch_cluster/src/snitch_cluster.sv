@@ -290,7 +290,7 @@ module snitch_cluster
   // SoC out, (Bootrom)
   localparam int unsigned NrWideSlaves = 1 + IntBootromEnable;
   localparam int unsigned NrWideRuleIdcs = NrWideSlaves - 1;
-  localparam int unsigned NrWideRules = (1 + AliasRegionEnable) * NrWideRuleIdcs;
+  localparam int unsigned NrWideRules = (NrWideRuleIdcs > 0) ? ((1 + AliasRegionEnable) * NrWideRuleIdcs) : (1 + AliasRegionEnable);
 
   // AXI Configuration
   localparam axi_pkg::xbar_cfg_t ClusterXbarCfg = '{
@@ -376,7 +376,7 @@ module snitch_cluster
   `MEM_TYPEDEF_ALL(mem_dma, tcdm_mem_addr_t, data_dma_t, strb_dma_t, logic)
 
   `TCDM_TYPEDEF_ALL(tcdm, tcdm_addr_t, data_t, strb_t, tcdm_user_t)
-  `TCDM_TYPEDEF_ALL(tcdm_dma, tcdm_addr_t, data_dma_t, strb_dma_t, logic)
+  `TCDM_TYPEDEF_ALL(tcdm_dma, addr_t, data_dma_t, strb_dma_t, logic)
 
   `REG_BUS_TYPEDEF_REQ(reg_req_t, addr_t, data_t, strb_t)
   `REG_BUS_TYPEDEF_RSP(reg_rsp_t, data_t)
@@ -634,59 +634,66 @@ module snitch_cluster
   logic [DmaXbarCfg.NoSlvPorts-1:0][$clog2(DmaXbarCfg.NoMstPorts)-1:0] dma_xbar_default_port;
   assign dma_xbar_default_port = '{default: SoCDMAOut};
 
-  xbar_rule_t [3:0] dma_xbar_rules;
+  xbar_rule_t [1:0] dma_xbar_rules;
   xbar_rule_t [DmaXbarCfg.NoAddrRules-1:0] enabled_dma_xbar_rule;
 
   assign dma_xbar_rules = '{
-    '{idx: TCDMDMA,    start_addr: tcdm_start_address,     end_addr: tcdm_end_address},
     '{idx: BootRom,    start_addr: bootrom_start_address,  end_addr: bootrom_end_address},
-    '{idx: TCDMDMA,    start_addr: TCDMAliasStart,         end_addr: TCDMAliasEnd},
     '{idx: BootRom,    start_addr: BootRomAliasStart,      end_addr: BootRomAliasEnd}
   };
 
   always_comb begin
     automatic int unsigned i = 0;
-    enabled_dma_xbar_rule[i] = dma_xbar_rules[0]; i++; // TCDM
-    enabled_dma_xbar_rule[i] = dma_xbar_rules[1]; i++; // ZeroMemory
-    if (IntBootromEnable) enabled_dma_xbar_rule[i] = dma_xbar_rules[2]; i++; // Bootrom
+    if (IntBootromEnable) enabled_dma_xbar_rule[i] = dma_xbar_rules[0]; i++; // Bootrom
     if (AliasRegionEnable) begin
-      enabled_dma_xbar_rule[i] = dma_xbar_rules[3]; i++; // TCDM Alias
-      enabled_dma_xbar_rule[i] = dma_xbar_rules[4]; i++; // ZeroMemory Alias
-      if (IntBootromEnable) enabled_dma_xbar_rule[i] = dma_xbar_rules[5]; // Bootrom Alias
+      if (IntBootromEnable) enabled_dma_xbar_rule[i] = dma_xbar_rules[1]; // Bootrom Alias
     end
   end
 
   // dma address rules
-  xbar_rule_t [3:0] dma_addr_rule;
-  assign dma_addr_rule[1:0] = '{
-    '{  //SoC
-      idx:        0,
-      start_addr: '0,
-      end_addr:   tcdm_start_address
-    },
-    '{
-      idx:        1,
-      start_addr: tcdm_start_address,
-      end_addr:   tcdm_end_address
-    }
-    // TODO: remap unused ZeroMem
+  xbar_rule_t [1:0] dma_addr_rule;
+  xbar_rule_t [AliasRegionEnable:0] enabled_dma_addr_rule;
+  assign dma_addr_rule = '{
+    '{idx: TCDMDMA,    start_addr: tcdm_start_address,     end_addr: tcdm_end_address},
+    '{idx: TCDMDMA,    start_addr: TCDMAliasStart,         end_addr: TCDMAliasEnd}
   };
-  if (AliasRegionEnable) begin
-    assign dma_addr_rule[3:2] = '{
-      '{
-        idx:        2,
-        start_addr: TCDMAliasStart,
-        end_addr:   TCDMAliasEnd
-      },
-      '{
-        idx:        3,
-        start_addr: ZeroMemAliasStart,
-        end_addr:   ZeroMemAliasEnd
-      }
-    };
+
+  always_comb begin
+    automatic int unsigned i = 0;
+    enabled_dma_addr_rule[i] = dma_addr_rule[0]; i++; // TCDM
+    if (AliasRegionEnable) begin
+      enabled_dma_addr_rule[i] = dma_addr_rule[1]; i++; // TCDM Alias
+    end
   end
 
-  localparam bit [DmaXbarCfg.NoSlvPorts-1:0] DMAEnableDefaultMstPort = '1;
+  // assign dma_addr_rule[1:0] = '{
+  //   '{  //SoC
+  //     idx:        SoCDMAOut,
+  //     start_addr: '0,
+  //     end_addr:   tcdm_start_address
+  //   },
+  //   '{
+  //     idx:        1,
+  //     start_addr: tcdm_start_address,
+  //     end_addr:   tcdm_end_address
+  //   }
+  //   // TODO: remap unused ZeroMem
+  // };
+  // if (AliasRegionEnable) begin
+  //   assign dma_addr_rule[3:2] = '{
+  //     '{
+  //       idx:        2,
+  //       start_addr: TCDMAliasStart,
+  //       end_addr:   TCDMAliasEnd
+  //     },
+  //     '{
+  //       idx:        3,
+  //       start_addr: ZeroMemAliasStart,
+  //       end_addr:   ZeroMemAliasEnd
+  //     }
+  //   };
+  // end
+
   axi_xbar #(
     .Cfg (DmaXbarCfg),
     .ATOPs (0),
@@ -713,7 +720,7 @@ module snitch_cluster
     .mst_ports_req_o (wide_axi_slv_req),
     .mst_ports_resp_i (wide_axi_slv_rsp),
     .addr_map_i (enabled_dma_xbar_rule),
-    .en_default_mst_port_i (DMAEnableDefaultMstPort),
+    .en_default_mst_port_i ('1),
     .default_mst_port_i (dma_xbar_default_port)
   );
 
@@ -1055,7 +1062,7 @@ module snitch_cluster
         .tcdm_addr_base_i (tcdm_start_address),
         .barrier_o (barrier_in[i]),
         .barrier_i (barrier_out),
-        .dma_addr_rule_i (dma_addr_rule)
+        .dma_addr_rule_i (enabled_dma_addr_rule)
       );
       for (genvar j = 0; j < TcdmPorts; j++) begin : gen_tcdm_user
         always_comb begin
