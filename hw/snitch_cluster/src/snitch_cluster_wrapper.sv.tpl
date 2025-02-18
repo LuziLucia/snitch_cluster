@@ -76,9 +76,9 @@ package ${cfg['pkg_name']};
   localparam int unsigned Hive [NrCores] = '{${core_cfg('hive')}};
 
   typedef struct packed {
-% for field, width in cfg['sram_cfg_fields'].items():
-    logic [${width-1}:0] ${field};
-% endfor
+    logic [2:0] ema;
+    logic [1:0] emaw;
+    logic [0:0] emas;
   } sram_cfg_t;
 
   typedef struct packed {

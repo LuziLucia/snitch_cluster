@@ -50,6 +50,7 @@ CLUSTER_GEN_SRC ?= $(wildcard $(ROOT)/util/clustergen/*.py)
 BIN_DIR           ?= bin
 GENERATED_DIR     ?= $(MKFILE_DIR)generated
 PERIPH_DIR        ?= $(ROOT)/hw/snitch_cluster/src/snitch_cluster_peripheral
+IDMA_ROOT         := $(shell $(BENDER) path idma)
 
 # If the configuration file is overriden on the command-line (through
 # CFG_OVERRIDE) and this file differs from the least recently used
@@ -142,6 +143,11 @@ FORCE:
 
 include $(ROOT)/target/snitch_cluster/sw.mk
 
+########
+# iDMA #
+########
+include $(IDMA_ROOT)/idma.mk
+
 #######
 # RTL #
 #######
@@ -149,6 +155,7 @@ include $(ROOT)/target/snitch_cluster/sw.mk
 GENERATED_RTL_SOURCES  = $(PERIPH_DIR)/snitch_cluster_peripheral_reg_top.sv
 GENERATED_RTL_SOURCES += $(PERIPH_DIR)/snitch_cluster_peripheral_reg_pkg.sv
 GENERATED_RTL_SOURCES += $(GENERATED_DIR)/snitch_cluster_wrapper.sv
+GENERATED_RTL_SOURCES += $(IDMA_FULL_RTL)
 GENERATED_RTL_SOURCES += test/snitch_bootrom.sv
 
 .PHONY: rtl clean-rtl
