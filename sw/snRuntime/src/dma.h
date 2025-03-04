@@ -430,28 +430,28 @@ inline uint32_t snrt_dma_memset_init_1d(uint64_t ptr, uint8_t value, uint32_t si
 
     
     if (value == 0x00) {
-        register uint32_t cfg asm("a5") = channel << 2;        // 15
-
+        // register uint32_t cfg asm("a5") = channel << 2;        // 15
+        uint32_t cfg = channel << 2;
         // dminit a3, a4, channel | 0b00
         asm volatile(".word %1\n"
                     : "=r"(reg_txid)
-                    : "i"(R_TYPE_ENCODE(DMINIT_FUNCT7, 15, 14, XDMA_FUNCT3,
+                    : "i"(R_TYPE_ENCODE(DMINIT_FUNCT7, cfg, 14, XDMA_FUNCT3,
                                         10, OP_CUSTOM1)),
-                    "r"(reg_size), "r"(cfg));
+                    "r"(reg_size));
 
     }
     else if (value == 0xff) {
-        register uint32_t cfg asm("a5") = channel << 2 | 1;        // 15
+        uint32_t cfg = channel << 2 | 1;        // 15
 
         // dminit a3, a4, channel | 0b01
         asm volatile(".word %1\n"
                     : "=r"(reg_txid)
-                    : "i"(R_TYPE_ENCODE(DMINIT_FUNCT7, 15, 14, XDMA_FUNCT3,
+                    : "i"(R_TYPE_ENCODE(DMINIT_FUNCT7, cfg, 14, XDMA_FUNCT3,
                                         10, OP_CUSTOM1)),
-                    "r"(reg_size), "r"(cfg));
+                    "r"(reg_size));
     }
     else {
-        register uint32_t cfg asm("a5") = channel << 2 | 2;        // 15
+        uint32_t cfg = channel << 2 | 2;        // 15
 
         // dmsrc value, 0
         asm volatile(".word %0\n" ::"i"(R_TYPE_ENCODE(DMSRC_FUNCT7, 0, 12,
@@ -461,9 +461,9 @@ inline uint32_t snrt_dma_memset_init_1d(uint64_t ptr, uint8_t value, uint32_t si
         // dminit a3, a4, channel | 0b10
         asm volatile(".word %1\n"
                     : "=r"(reg_txid)
-                    : "i"(R_TYPE_ENCODE(DMINIT_FUNCT7, 15, 14, XDMA_FUNCT3,
+                    : "i"(R_TYPE_ENCODE(DMINIT_FUNCT7, cfg, 14, XDMA_FUNCT3,
                                         10, OP_CUSTOM1)),
-                    "r"(reg_size), "r"(cfg));
+                    "r"(reg_size));
 
     }
     
