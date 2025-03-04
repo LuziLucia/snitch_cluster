@@ -11,7 +11,7 @@ export VCS_SEPP=vcs-2024.09
 export VERILATOR_SEPP=oseda
 export QUESTA_SEPP=questa-2023.4
 # export LLVM_BINROOT=/usr/pack/riscv-1.0-kgf/pulp-llvm-0.12.0/bin
-export LLVM_BINROOT=/usr/scratch/badile21/msc24h31/llvm-project/.gitlab-ci.d/work/install/bin
+export LLVM_BINROOT=/usr/scratch/pisoc1/msc24h31/llvm-project/.gitlab-ci.d/work/install/bin
 
 # Create Python virtual environment with required packages
 /usr/local/anaconda3-2023.07/bin/python -m venv .venv
