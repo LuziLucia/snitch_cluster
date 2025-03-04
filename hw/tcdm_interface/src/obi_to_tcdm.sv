@@ -32,7 +32,8 @@ module obi_to_tcdm #(
     assign tcdm_req_o[i].q_valid = obi_req_i[i].req;
     assign tcdm_req_o[i].q = '{
       addr: obi_req_i[i].a.addr,
-      write: ~obi_req_i[i].a.we,
+      write: 
+      obi_req_i[i].a.we,
       amo: reqrsp_pkg::AMONone,
       data: obi_req_i[i].a.wdata,
       strb: obi_req_i[i].a.be,

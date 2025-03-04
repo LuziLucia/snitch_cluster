@@ -644,9 +644,9 @@ module snitch_cluster
 
   always_comb begin
     automatic int unsigned i = 0;
-    if (IntBootromEnable) enabled_dma_xbar_rule[i] = dma_xbar_rules[0]; i++; // Bootrom
+    if (IntBootromEnable) enabled_dma_xbar_rule[i] = dma_xbar_rules[1]; i++; // Bootrom
     if (AliasRegionEnable) begin
-      if (IntBootromEnable) enabled_dma_xbar_rule[i] = dma_xbar_rules[1]; // Bootrom Alias
+      if (IntBootromEnable) enabled_dma_xbar_rule[i] = dma_xbar_rules[0]; // Bootrom Alias
     end
   end
 
@@ -660,39 +660,12 @@ module snitch_cluster
 
   always_comb begin
     automatic int unsigned i = 0;
-    enabled_dma_addr_rule[i] = dma_addr_rule[0]; i++; // TCDM
+    enabled_dma_addr_rule[i] = dma_addr_rule[1]; i++; // TCDM
     if (AliasRegionEnable) begin
-      enabled_dma_addr_rule[i] = dma_addr_rule[1]; i++; // TCDM Alias
+      enabled_dma_addr_rule[i] = dma_addr_rule[0]; i++; // TCDM Alias
     end
   end
 
-  // assign dma_addr_rule[1:0] = '{
-  //   '{  //SoC
-  //     idx:        SoCDMAOut,
-  //     start_addr: '0,
-  //     end_addr:   tcdm_start_address
-  //   },
-  //   '{
-  //     idx:        1,
-  //     start_addr: tcdm_start_address,
-  //     end_addr:   tcdm_end_address
-  //   }
-  //   // TODO: remap unused ZeroMem
-  // };
-  // if (AliasRegionEnable) begin
-  //   assign dma_addr_rule[3:2] = '{
-  //     '{
-  //       idx:        2,
-  //       start_addr: TCDMAliasStart,
-  //       end_addr:   TCDMAliasEnd
-  //     },
-  //     '{
-  //       idx:        3,
-  //       start_addr: ZeroMemAliasStart,
-  //       end_addr:   ZeroMemAliasEnd
-  //     }
-  //   };
-  // end
 
   axi_xbar #(
     .Cfg (DmaXbarCfg),
@@ -844,7 +817,8 @@ module snitch_cluster
         .ByteWidth (8),
         .NumPorts (1),
         .Latency (1),
-        .impl_in_t (sram_cfg_t)
+        .impl_in_t (sram_cfg_t),
+        .SimInit ("ones")
       ) i_data_mem (
         .clk_i,
         .rst_ni,
